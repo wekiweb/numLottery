@@ -1,0 +1,172 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="ko" lang="ko">
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+
+	<title>Lottery Program</title>
+	<meta name="Author" content="cartes" />
+
+<style type="text/css">
+/*<![CDATA[*/
+html, body { border: 0 none; padding: 0; margin: 0; }
+
+body { padding: 15px; font-family: 'Arial','Malgun Gothic',sans-serif; }
+
+hr { height: 1px; background-color: #000; border: 0 none; }
+
+#displayNum { font-size: 120px; line-height: 1.0; margin: 0px; padding: 15px; font-weight: bold; font-family: 'Georgia','Times New Roman',serif; }
+
+#areaPick, #areaList { float: left; }
+#areaPick { width: 200px; }
+#areaPick p { text-align: center; }
+#areaPick button { width: 100%; line-height: 30px; display: block; font-size: 18px; font-family: 'Arial',sans-serif; }
+#areaList { margin-left: 40px; padding-left: 40px; }
+/*]]>*/
+</style>
+
+<script type="text/javascript">
+//<![[
+var rangeA = 1;
+var rangeB = 57;
+
+var arrList = new Array();
+var arrPicked = new Array();
+
+var arrListIdx = (rangeB-1);
+var arrPickedIdx = 0;
+
+var aniIdx = 0;
+var aniRepeat = 0;
+
+var isPickAndEnlistRunning = false;
+var isAniStopped = false;
+var hasAniStoppedRun = false;
+
+function hasTheSameNum(arr, inputNum) {
+	var count = 0;
+
+	for(var i=0; i<=(arr.length); i++)
+	{
+		if ( arr[i] == inputNum )
+		{
+			count++;
+			break;
+		}
+	}
+
+	if( count == 0 )
+		return false;
+	else
+		return true;
+}
+
+function genRandArray() {
+	for(var i=(rangeA-1); i<=(rangeB-1); i++)
+	{
+		var randNum = Math.floor( (Math.random() * (rangeB - rangeA + 1)) + rangeA );
+
+		if ( hasTheSameNum(arrList, randNum) == false )
+		{
+			arrList[i] = randNum;
+		}
+		else if ( hasTheSameNum(arrList, randNum) == true )
+		{
+			i--;
+		}
+		else
+		{
+			alert("hasTheSameNum()함수 평가결과가 true도 false도 아닙니다.");
+		}
+	}
+}
+
+function pickAndEnlist() {
+	if (isPickAndEnlistRunning != true)
+	{
+		if (arrList.length == 0)
+		{
+			alert("숫자 배열(arrList)이 비어있습니다.\n즉, 숫자를 리스트의 끝까지 다 뽑았습니다.")
+			return false;
+		}
+		isPickAndEnlistRunning = true;
+
+		var displayNum = document.getElementById("displayNum");
+		var currPicked;
+
+		var myAni = setInterval(function() {
+			if ( arrList[aniIdx] == undefined )
+				displayNum.firstChild.nodeValue = arrPicked[arrPicked.length - 1];
+			else
+				displayNum.firstChild.nodeValue = arrList[aniIdx];
+			aniIdx+=1;
+			if (aniIdx > arrListIdx ) // arrList[aniIdx]가 끝에 오면, aniIdx 다시 0으로/루프 1번 돌았으므로 x+=1;
+			{
+				aniIdx = 0;
+				aniRepeat+=1;
+			}
+			isPickAndEnlistRunning = false;
+		}, 10);
+		var myStopper = setInterval(function() {
+			if (aniRepeat >= 2)
+			{
+				clearInterval(myAni);
+				isAniStopped = true;
+				displayNum.firstChild.nodeValue = arrPicked[arrPicked.length - 1];
+			}
+		}, 10);
+		aniRepeat = 0;
+
+		currPicked = arrList.pop(); arrListIdx--;
+		arrPicked.push(currPicked);
+
+		//Enlist
+		var ifAniStopped = setInterval(function() {
+			if (isAniStopped == true)
+			{
+				if(hasAniStoppedRun == false)
+				{
+					hasAniStoppedRun = true;
+					var ol = document.getElementById("areaList");
+					var li = document.createElement("li");
+					ol.appendChild(li);
+					var txtNode = document.createTextNode(arrPicked[arrPicked.length - 1]+"번");
+					li.appendChild(txtNode);
+				}
+			}
+		}, 10);
+		isAniStopped = false;
+		isPickAndEnlistRunning = false;
+		hasAniStoppedRun = false;
+	}
+}
+
+function main() {
+	var btnPick = document.getElementById("btnPick");
+
+	genRandArray();
+	btnPick.onclick = pickAndEnlist;
+	console.log(arrList);
+}
+
+window.onload = function () {
+	main();
+};
+//]]>
+</script>
+</head>
+
+<body>
+<div id="wrap">
+	<h1>번호 추첨 프로그램</h1>
+	<p>이 프로그램은 설정한 범위내에서 무작위로 변수를 추첨합니다.</p>
+	<hr />
+	<div id="areaPick">
+		<p id="displayNum">0</p>
+		<button id="btnPick">번호 뽑기!</button>
+	</div>
+	<ol id="areaList">
+	</ol>
+</div>
+</body>
+</html>
